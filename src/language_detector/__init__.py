@@ -8,18 +8,28 @@ class LanguageDetector:
     def __init__(self, model_path: Optional[str] = None) -> None:
         """
         Initialize the Language Detector with a FastText model.
-        
+
         Args:
             model_path (Optional[str]): Path to the FastText language model.
-                      If None, will look in default location: ~/llm_models/fasttext/lid.176.bin
+                      If None, will first look for the environment variable 'LLM_FASTTEXT_MODEL_PATH'.
+                      If the environment variable is not set or empty, it will look in the default location: ~/llm_models/fasttext/lid.176.bin.
         """
-        if model_path is None:
+        # Check for the environment variable LLM_FASTTEXT_MODEL_PATH
+        env_model_path = os.getenv('LLM_FASTTEXT_MODEL_PATH')
+
+        # If the environment variable is set and not empty, use it
+        if env_model_path:
+            model_path = env_model_path
+        elif model_path is None:
+            # If model_path is not provided, use the default path
             root = str(Path(__file__).resolve().parent.parent.parent)
             model_path = os.path.join(root, "llm_models", "fasttext", "lid.176.bin")
-        
+
+        # Check if the model file exists at the specified path
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model not found at {model_path}")
-            
+
+        # Load the FastText model
         self.model = fasttext.load_model(model_path)
         
     def detect(self, text: str) -> str:
