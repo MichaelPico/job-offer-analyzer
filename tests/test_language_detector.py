@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Add the src directory to the system path to import the LanguageDetector module
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../utils')))
 from language_detector import LanguageDetector
 
 
@@ -22,7 +22,7 @@ def test_initialize_with_default_model_path(mock_model):
     with mock.patch("fasttext.load_model", return_value=mock_model) as mock_load_model:
         detector = LanguageDetector()
         assert detector.model == mock_model
-        mock_load_model.assert_called_once_with(os.path.join(str(Path(__file__).resolve().parent.parent.parent), "llm_models", "fasttext", "lid.176.bin"))
+        mock_load_model.assert_called_once_with(os.path.join(str(Path(__file__).resolve().parent.parent), "llm_models", "fasttext", "lid.176.bin"))
 
 
 def test_initialize_with_invalid_model_path():
