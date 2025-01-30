@@ -5,6 +5,13 @@ import fasttext
 import os 
 
 class LanguageDetector:
+    """
+    A class for detecting the language of input text using a FastText model.
+
+    This class loads a pre-trained FastText language identification model and provides methods 
+    to detect the language of a given text. It can return just the language code or also include 
+    the confidence score of the detection.
+    """
     def __init__(self, model_path: Optional[str] = None) -> None:
         """
         Initialize the Language Detector with a FastText model.
@@ -22,7 +29,7 @@ class LanguageDetector:
             model_path = env_model_path
         elif model_path is None:
             # If model_path is not provided, use the default path
-            root = str(Path(__file__).resolve().parent.parent.parent)
+            root = str(Path(__file__).resolve().parent.parent)
             model_path = os.path.join(root, "llm_models", "fasttext", "lid.176.bin")
 
         # Check if the model file exists at the specified path
