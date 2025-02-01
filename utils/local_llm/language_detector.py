@@ -29,7 +29,7 @@ class LanguageDetector:
             model_path = env_model_path
         elif model_path is None:
             # If model_path is not provided, use the default path
-            root = str(Path(__file__).resolve().parent.parent)
+            root = str(Path(__file__).resolve().parent.parent.parent)
             model_path = os.path.join(root, "llm_models", "fasttext", "lid.176.bin")
 
         # Check if the model file exists at the specified path
