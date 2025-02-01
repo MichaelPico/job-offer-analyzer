@@ -151,7 +151,7 @@ class LinkedinExtractor:
                     company=_get_text(node, '[class*=_subtitle]'),
                     location=_get_text(node, '[class*=_location]'),
                     posted_time=_get_text(node, '[class*=listdate]'),
-                    job_id=_get_href(node, '[class*=_full-link]').split('-')[-1]
+                    job_id=_get_href(node, '[class*=_full-link]').split('-')[-1].split('?')[0]
                 )
                 
                 # Go to the job details to extract the description
