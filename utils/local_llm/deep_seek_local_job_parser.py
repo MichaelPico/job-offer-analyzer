@@ -3,7 +3,7 @@ import torch
 from transformers import pipeline
 import re
 
-class DeepSeekJobParser :
+class DeepSeekLocalJobParser :
     def __init__(self):
         """Initialize the DeepSeek model pipeline"""
         device = 0 if torch.cuda.is_available() else -1  # Use GPU if available
