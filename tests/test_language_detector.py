@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Add the src directory to the system path to import the LanguageDetector module
 import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../utils')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../utils/local_llm')))
 from language_detector import LanguageDetector
 
 

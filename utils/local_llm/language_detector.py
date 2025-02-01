@@ -53,7 +53,7 @@ class LanguageDetector:
         if not text.strip():
             return "unknown"
             
-        labels, scores  = self.model.predict("Hello world")
+        labels, scores  = self.model.predict(text)
         
         language = labels[0].replace('__label__', '')
         
