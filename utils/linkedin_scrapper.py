@@ -5,7 +5,7 @@ import random
 from bs4 import BeautifulSoup
 from typing import List, Optional
 
-from utils.language_detector import LanguageDetector
+from utils.local_llm.language_detector import LanguageDetector
 from utils.base_scrapper import fetch_page, _get_href, _get_text 
 from .shared import LinkedinJobListing, job_type_dict, experience_level_dict, publish_timespan_dict
 
