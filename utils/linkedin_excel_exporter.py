@@ -5,6 +5,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from typing import List
+from datetime import datetime
 
 from utils.shared import LinkedinJobListing
 
@@ -17,8 +18,26 @@ class LinkedinExcelExporter:
         Args:
             excel_path (str): Full path including filename where the Excel should be saved
         """
-        self.excel_path = excel_path
-        
+        self.excel_path = self._get_valid_path(excel_path)
+
+    def _get_valid_path(self, path: str) -> str:
+        """
+        Ensure the file path is accessible; if not, append the current date to the filename.
+
+        Args:
+            path (str): The original file path.
+
+        Returns:
+            str: A valid file path.
+        """
+        directory, filename = os.path.split(path)
+        if not os.path.exists(directory) and directory:
+            print(f"Warning: Path '{directory}' is inaccessible. Using fallback filename.")
+            name, ext = os.path.splitext(filename)
+            new_filename = f"{name}_{datetime.now().strftime('%Y%m%d')}{ext}"
+            return os.path.join(os.getcwd(), new_filename)  # Save in the current directory
+        return path
+
     def _format_column_title(self, title: str) -> str:
         """
         Format column titles to be more readable
@@ -29,10 +48,9 @@ class LinkedinExcelExporter:
         Returns:
             str: Formatted column title
         """
-        # Split by underscore and capitalize each word
         words = title.replace('_', ' ').split()
         return ' '.join(word.capitalize() for word in words)
-    
+
     def export_jobs(self, jobs: List[LinkedinJobListing], sheet_name: str = "LinkedIn Jobs"):
         """
         Export jobs to Excel and format them as a table
