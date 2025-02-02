@@ -17,13 +17,19 @@ An advanced Python application leveraging cutting-edge AI technologies to revolu
 - Selenium/BeautifulSoup for intelligent web scraping
 - Pandas for data manipulation and Excel integration
 
-## Configuration
-Configure AI and API settings via environment variables:
-```env
-AZURE_OPENAI_ENDPOINT=your_azure_endpoint
-AZURE_OPENAI_API_KEY=your_api_key
-AZURE_OPENAI_MODEL_NAME=your_model_name
-JOB_DESIRED_LANGUAGE=en
+## Initial Setup
+
+### Environment Configuration
+1. Create your environment file by copying the template:
+    ```bash
+    cp .env.sample .env
+    ```
+2. Configure the necessary environment variables in `.env`
+
+### Dependencies Installation
+Install required packages using pip:
+```bash
+pip install -r requirements.txt
 ```
 
 ## Quick Start
@@ -31,20 +37,8 @@ JOB_DESIRED_LANGUAGE=en
 python main.py
 ```
 
-## Output Analytics
-- Comprehensive Excel reports with AI-analyzed data
-- Structured JSON data export
-- Language classification results
-- AI-powered job requirement analysis
-
-## Project Vision
-This project represents the intersection of AI, automation, and job market analysis, designed to streamline the job search process through advanced technology.
-
 ## Roadmap
-- Integration with additional AI models
-- Enhanced pattern recognition
-- Advanced filtering algorithms
-- Real-time analysis capabilities
+- Extract jobs from other sites like indeed
 
 ## License
 MIT
