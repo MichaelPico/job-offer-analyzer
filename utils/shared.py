@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import List
 
 ###########
@@ -15,7 +16,7 @@ class LinkedinJobListing:
         url (str): The URL of the job posting. Defaults to an empty string.
         company (str): The company offering the job. Defaults to an empty string.
         location (str): The job location. Defaults to an empty string.
-        posted_time (str): The time the job was posted. Defaults to an empty string.
+        posted_time (datetime): The time the job was posted. Defaults to None.
         seniority_level (str): The seniority level required for the job. Defaults to an empty string.
         employment_type (str): The type of employment (e.g., full-time, part-time). Defaults to an empty string.
         job_function (str): The primary job function. Defaults to an empty string.
@@ -34,7 +35,7 @@ class LinkedinJobListing:
         url: str = "", 
         company: str = "", 
         location: str = "", 
-        posted_time: str = "", 
+        posted_time: datetime = None, 
         seniority_level: str = "", 
         employment_type: str = "", 
         job_function: str = "", 
@@ -55,7 +56,6 @@ class LinkedinJobListing:
         self.job_id = job_id
         self.title_lang = title_lang
         self.description_lang = description_lang
-        
         
 @dataclass
 class JobAIanalysis:
