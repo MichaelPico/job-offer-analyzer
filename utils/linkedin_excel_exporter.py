@@ -63,6 +63,9 @@ class LinkedinExcelExporter:
         jobs_data = ([vars(job) for job in jobs])
         df = pd.DataFrame(jobs_data)
         
+        # Sort by posted_time in descending order (newest first)
+        df = df.sort_values(by='posted_time', ascending=False)
+        
         # Reorder columns to put URL at the end
         columns = [col for col in df.columns if col != 'url'] + ['url']
         df = df[columns]
