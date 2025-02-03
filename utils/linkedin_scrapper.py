@@ -111,6 +111,7 @@ class LinkedinExtractor:
             raise ValueError("desired_language must be set when use_ai_analysis is enabled")
 
         self.azure_openai_analyzer = azure_openai_analyzer if azure_openai_analyzer is not None else OpenAIjobAnalyser()
+        self.execution_started_datetime = datetime.now()
 
     def build_job_list_url(self, start: int = 0, keywords: Optional[str] = None) -> str:
         """
@@ -265,7 +266,8 @@ class LinkedinExtractor:
                     company=job_company,
                     location=_get_text(node, '[class*=_location]'),
                     posted_time=posted_date,
-                    job_id=job_id
+                    job_id=job_id,
+                    date_analyzed=self.execution_started_datetime,
                 )
 
                 # Set title language and check if it matches desired language
