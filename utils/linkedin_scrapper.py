@@ -314,7 +314,7 @@ class LinkedinExtractor:
         total_jobs = 0
         total_valid_jobs = 0
         consecutive_empty_pages = 0
-        MAX_EMPTY_PAGES = 3  # Maximum number of consecutive empty pages before moving to next position
+        MAX_EMPTY_PAGES = 5  # Maximum number of consecutive empty pages before moving to next position
 
         for position in self.positions:
             if total_jobs >= self.max_jobs:
