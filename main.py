@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from datetime import datetime
 import os
 import json
@@ -29,23 +30,43 @@ def load_jobs_from_json(filename="output/jobs.json") -> list:
     try:
         with open(filename, "r", encoding="utf-8") as f:
             job_dicts = json.load(f)
-        
+
         jobs = []
         for job_dict in job_dicts:
-            # Convert ISO format string back to datetime if exists
+            # 1. Handle posted_time conversion (as you were doing):
             if job_dict.get('posted_time'):
-                job_dict['posted_time'] = datetime.fromisoformat(job_dict['posted_time'])
-            
-            # Create LinkedinJobListing instance
-            job = LinkedinJobListing(**job_dict)
-            jobs.append(job)
-            
+                job_dict['posted_time'] = datetime.fromisoformat(job_dict['posted_time'].replace('Z', '+00:00')) # added timezone handling
+
+            # 2. Create a *new* dictionary with only the correct keys:
+            valid_job_data = {}
+            for field_name in asdict(LinkedinJobListing()).keys(): # Get all field names
+                if field_name in job_dict:  # Check if the key exists in the dict
+                    valid_job_data[field_name] = job_dict[field_name]
+
+            # 3. Create the instance using the filtered dictionary:
+            try:
+                job = LinkedinJobListing(**valid_job_data)
+                jobs.append(job)
+            except TypeError as e:
+                print(f"Error creating job from dict: {job_dict}")  # Print the problematic dict
+                print(f"Error Details: {e}")
+                # Option: You could continue or break here depending on your needs.
+                # For Example, to skip the invalid jobs:
+                # continue
+
         print(f"Loaded {len(jobs)} jobs from {filename}")
         return jobs
+
     except FileNotFoundError:
         print(f"No jobs file found at {filename}")
         return []
-
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON in file {filename}: {e}")
+        return []
+    except ValueError as e:  # Catch potential datetime conversion errors
+        print(f"Error converting date in job data: {e}")
+        return []
+    
 def main():
     linkedin_jobs = load_jobs_from_json()
     
