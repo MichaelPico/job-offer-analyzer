@@ -188,6 +188,10 @@ class LinkedinExtractor:
                 except (AttributeError, KeyError):
                     continue
 
+        # Check if job is easy apply by looking for offsite apply icon
+        offsite_icon = job_details_soup.find('icon', attrs={'data-svg-class-name': 'apply-button__offsite-apply-icon-svg'})
+        job.easy_apply = offsite_icon is None
+
         # Set description language
         job.description_lang = self.language_detector.detect(job_description)
 
