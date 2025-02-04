@@ -190,7 +190,7 @@ class LinkedinExtractor:
 
         # Check if job is easy apply by looking for offsite apply icon
         offsite_icon = job_details_soup.find('icon', attrs={'data-svg-class-name': 'apply-button__offsite-apply-icon-svg'})
-        job.easy_apply = offsite_icon is None
+        job.easy_apply = 'Yes' if offsite_icon is None else 'No'
 
         # Set description language
         job.description_lang = self.language_detector.detect(job_description)
@@ -272,6 +272,7 @@ class LinkedinExtractor:
                     posted_time=posted_date,
                     job_id=job_id,
                     date_analyzed=self.execution_started_datetime,
+                    source="LinkedIn"
                 )
 
                 # Set title language and check if it matches desired language

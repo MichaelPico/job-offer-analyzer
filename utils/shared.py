@@ -28,7 +28,8 @@ class LinkedinJobListing:
         title_lang (str): The detected language of the job title.
         description_lang (str): The detected language of the job description.
         date_analyzed (Optional[datetime]): The date when the job listing was analyzed.
-        easy_apply (bool): Whether the job listing supports easy application.
+        easy_apply (str): Whether the job listing supports easy application.
+        source (str): The source of the job listing (e.g., LinkedIn).
     """
     title: str = ""
     url: str = ""
@@ -47,7 +48,8 @@ class LinkedinJobListing:
     title_lang: str = ""
     description_lang: str = ""
     date_analyzed: Optional[datetime] = None
-    easy_apply: bool = False
+    easy_apply: str = 'No'
+    source: str = "LinkedIn"
         
 @dataclass
 class JobAIanalysis:
