@@ -59,32 +59,65 @@ class LinkedinExcelExporter:
             jobs (List[LinkedinJobListing]): List of LinkedIn job listings to export
             sheet_name (str): Name of the sheet where jobs should be exported
         """
-        # Convert jobs to pandas DataFrame
-        jobs_data = ([vars(job) for job in jobs])
+        # Convert jobs to pandas DataFrame with special handling for List fields
+        jobs_data = []
+        for job in jobs:
+            job_dict = vars(job)
+            # Convert List[str] to comma-separated string
+            job_dict['technologies_required'] = ', '.join(
+                job_dict['technologies_required'])
+            # Convert datetime objects to string format
+            if job_dict['posted_time'] and isinstance(job_dict['posted_time'], datetime):
+                job_dict['posted_time'] = job_dict['posted_time'].strftime('%Y-%m-%d %H:%M:%S')
+            if job_dict['date_analyzed'] and isinstance(job_dict['date_analyzed'], datetime):
+                job_dict['date_analyzed'] = job_dict['date_analyzed'].strftime('%Y-%m-%d %H:%M:%S')
+            jobs_data.append(job_dict)
+
         df = pd.DataFrame(jobs_data)
-        
-        # Sort by posted_time in descending order (newest first)
-        df = df.sort_values(by='posted_time', ascending=False)
-        
-        # Reorder columns to put URL at the end
-        columns = [col for col in df.columns if col != 'url'] + ['url']
-        df = df[columns]
-        
-        # Create formatted column names dictionary
-        formatted_columns = {col: self._format_column_title(col) for col in df.columns}
+
+        # Define the column order based on the dataclass fields
+        column_order = [
+            'title', 'company', 'location', 'posted_time',
+            'seniority_level', 'employment_type', 'job_function',
+            'industries', 'required_studies', 'technologies_required',
+            'experience_years_needed', 'salary_offered',
+            'job_id', 'title_lang', 'description_lang',
+            'date_analyzed', 'easy_apply', 'source',
+            'url'  # URL always last
+        ]
+
+        # Ensure all columns exist in the DataFrame
+        for col in column_order:
+            if col not in df.columns:
+                df[col] = ''  # Add empty column if missing
+
+        # Reorder columns
+        df = df[column_order]
+
+        # Format column names
+        formatted_columns = {
+            col: self._format_column_title(col) for col in df.columns}
         df = df.rename(columns=formatted_columns)
-        
+
         # Export to Excel
         df.to_excel(self.excel_path, sheet_name=sheet_name, index=False)
-        
+
         # Load workbook for formatting
         wb = load_workbook(self.excel_path)
         ws = wb[sheet_name]
-        
+
         # Format as table
-        table_ref = f"A1:{chr(65 + len(df.columns) - 1)}{len(jobs) + 1}"
+        def get_column_letter(n):
+            string = ""
+            while n > 0:
+                n, remainder = divmod(n - 1, 26)
+                string = chr(65 + remainder) + string
+            return string
+
+        last_column_letter = get_column_letter(len(df.columns))
+        table_ref = f"A1:{last_column_letter}{len(jobs) + 1}"
         table = Table(displayName="JobListings", ref=table_ref)
-        
+
         # Add a style to the table
         style = TableStyleInfo(
             name="TableStyleMedium2",
@@ -95,29 +128,33 @@ class LinkedinExcelExporter:
         )
         table.tableStyleInfo = style
         ws.add_table(table)
-        
+
         # Format headers
-        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_fill = PatternFill(start_color="366092",
+                                end_color="366092", fill_type="solid")
         header_font = Font(color="FFFFFF", bold=True)
-        
+
         for cell in ws[1]:
             cell.fill = header_fill
             cell.font = header_font
-            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
-        
+            cell.alignment = Alignment(
+                horizontal='center', vertical='center', wrap_text=True)
+
         # Format URL column
-        url_col_letter = chr(65 + len(df.columns) - 1)
+        url_col_letter = get_column_letter(
+            len(df.columns))  # Changed to use the function
         for row in range(2, len(jobs) + 2):
             cell = ws[f'{url_col_letter}{row}']
             if cell.value:  # If there's a URL
                 cell.hyperlink = cell.value
                 cell.value = "Link"
-                cell.font = Font(color="0563C1", underline="single")  # Blue, underlined
+                # Blue, underlined
+                cell.font = Font(color="0563C1", underline="single")
                 cell.alignment = Alignment(horizontal='center')
-        
+
         # Apply conditional formatting
         self._apply_conditional_formatting(ws, len(jobs))
-        
+
         # Auto-adjust column widths
         for column in ws.columns:
             max_length = 0
@@ -133,8 +170,9 @@ class LinkedinExcelExporter:
             if column[0].column_letter == url_col_letter:
                 ws.column_dimensions[column[0].column_letter].width = 10
             else:
-                ws.column_dimensions[column[0].column_letter].width = min(adjusted_width, 50)
-        
+                ws.column_dimensions[column[0].column_letter].width = min(
+                    adjusted_width, 50)
+
         # Save the workbook
         wb.save(self.excel_path)
     
