@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from dataclasses import dataclass, asdict
 from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.styles import PatternFill, Font, Alignment, NamedStyle
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from typing import List
 from datetime import datetime
@@ -51,6 +51,13 @@ class LinkedinExcelExporter:
         words = title.replace('_', ' ').split()
         return ' '.join(word.capitalize() for word in words)
 
+    def get_column_letter(self, n: int):
+        string = ""
+        while n > 0:
+            n, remainder = divmod(n - 1, 26)
+            string = chr(65 + remainder) + string
+        return string
+    
     def export_jobs(self, jobs: List[LinkedinJobListing], sheet_name: str = "LinkedIn Jobs"):
         """
         Export jobs to Excel and format them as a table
@@ -66,24 +73,21 @@ class LinkedinExcelExporter:
             # Convert List[str] to comma-separated string
             job_dict['technologies_required'] = ', '.join(
                 job_dict['technologies_required'])
-            # Convert datetime objects to string format
-            if job_dict['posted_time'] and isinstance(job_dict['posted_time'], datetime):
-                job_dict['posted_time'] = job_dict['posted_time'].strftime('%Y-%m-%d %H:%M:%S')
-            if job_dict['date_analyzed'] and isinstance(job_dict['date_analyzed'], datetime):
-                job_dict['date_analyzed'] = job_dict['date_analyzed'].strftime('%Y-%m-%d %H:%M:%S')
+            
             jobs_data.append(job_dict)
 
         df = pd.DataFrame(jobs_data)
 
         # Define the column order based on the dataclass fields
         column_order = [
-            'title', 'company', 'location', 'posted_time',
-            'seniority_level', 'employment_type', 'job_function',
-            'industries', 'required_studies', 'technologies_required',
-            'experience_years_needed', 'salary_offered',
+            'title', 'date_analyzed', 'posted_time',
+            'experience_years_needed', 'easy_apply',
+            'seniority_level', 'employment_type',
+            'job_function', 'industries',
+            'required_studies', 'technologies_required',
+            'company', 'location', 'salary_offered',
             'job_id', 'title_lang', 'description_lang',
-            'date_analyzed', 'easy_apply', 'source',
-            'url'  # URL always last
+            'source', 'url'  # URL always last
         ]
 
         # Ensure all columns exist in the DataFrame
@@ -93,6 +97,8 @@ class LinkedinExcelExporter:
 
         # Reorder columns
         df = df[column_order]
+        
+        df = df.sort_values(by=['date_analyzed', 'posted_time'], ascending=[False, False])
 
         # Format column names
         formatted_columns = {
@@ -105,16 +111,21 @@ class LinkedinExcelExporter:
         # Load workbook for formatting
         wb = load_workbook(self.excel_path)
         ws = wb[sheet_name]
+        
+        # Define a date style
+        date_style = NamedStyle(name="datetime", number_format="DD of MMMM YYYY")
+        if "datetime" not in wb.named_styles:
+            wb.add_named_style(date_style)
 
-        # Format as table
-        def get_column_letter(n):
-            string = ""
-            while n > 0:
-                n, remainder = divmod(n - 1, 26)
-                string = chr(65 + remainder) + string
-            return string
+        # Apply date style to 'date_analyzed' and 'posted_time' columns
+        date_analyzed_col_letter = self.get_column_letter(df.columns.get_loc('Date Analyzed') + 1)
+        posted_time_col_letter = self.get_column_letter(df.columns.get_loc('Posted Time') + 1)
 
-        last_column_letter = get_column_letter(len(df.columns))
+        for row in range(2, len(jobs) + 2):  # Start from row 2 to skip header
+            ws[f'{date_analyzed_col_letter}{row}'].style = 'datetime'
+            ws[f'{posted_time_col_letter}{row}'].style = 'datetime'
+
+        last_column_letter = self.get_column_letter(len(df.columns))
         table_ref = f"A1:{last_column_letter}{len(jobs) + 1}"
         table = Table(displayName="JobListings", ref=table_ref)
 
@@ -141,7 +152,7 @@ class LinkedinExcelExporter:
                 horizontal='center', vertical='center', wrap_text=True)
 
         # Format URL column
-        url_col_letter = get_column_letter(
+        url_col_letter = self.get_column_letter(
             len(df.columns))  # Changed to use the function
         for row in range(2, len(jobs) + 2):
             cell = ws[f'{url_col_letter}{row}']
