@@ -7,7 +7,7 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 from typing import List
 from datetime import datetime
 
-from utils.shared import LinkedinJobListing
+from utils.shared import JobListing
 
 
 class LinkedinExcelExporter:
@@ -58,7 +58,7 @@ class LinkedinExcelExporter:
             string = chr(65 + remainder) + string
         return string
     
-    def export_jobs(self, jobs: List[LinkedinJobListing], sheet_name: str = "LinkedIn Jobs"):
+    def export_jobs(self, jobs: List[JobListing], sheet_name: str = "LinkedIn Jobs"):
         """
         Export jobs to Excel and format them as a table
         

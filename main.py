@@ -4,7 +4,7 @@ import os
 import json
 
 import pandas as pd
-from utils.shared import LinkedinJobListing
+from utils.shared import JobListing
 from utils.remote_llm.openai_job_analyser import OpenAIjobAnalyser
 from utils.linkedin_excel_exporter import LinkedinExcelExporter
 from utils.local_llm.language_detector import LanguageDetector
@@ -33,19 +33,22 @@ def load_jobs_from_json(filename="output/jobs.json") -> list:
 
         jobs = []
         for job_dict in job_dicts:
-            # 1. Handle posted_time conversion (as you were doing):
+            # 1. Handle posted_time and date_analyzed conversion
             if job_dict.get('posted_time'):
                 job_dict['posted_time'] = datetime.fromisoformat(job_dict['posted_time'].replace('Z', '+00:00')) # added timezone handling
 
+            if job_dict.get('date_analyzed'):
+                job_dict['date_analyzed'] = datetime.fromisoformat(job_dict['date_analyzed'].replace('Z', '+00:00')) # added timezone handling
+
             # 2. Create a *new* dictionary with only the correct keys:
             valid_job_data = {}
-            for field_name in asdict(LinkedinJobListing()).keys(): # Get all field names
+            for field_name in asdict(JobListing()).keys(): # Get all field names
                 if field_name in job_dict:  # Check if the key exists in the dict
                     valid_job_data[field_name] = job_dict[field_name]
 
             # 3. Create the instance using the filtered dictionary:
             try:
-                job = LinkedinJobListing(**valid_job_data)
+                job = JobListing(**valid_job_data)
                 jobs.append(job)
             except TypeError as e:
                 print(f"Error creating job from dict: {job_dict}")  # Print the problematic dict
@@ -87,7 +90,6 @@ def main():
         azure_openai_analyzer=OpenAIjobAnalyser() if str(os.getenv('USE_AZURE_OPENAI', 'false')).lower() == 'true' else None,
         job_listings=linkedin_jobs
     )
-    linkedin_excel_exporter = LinkedinExcelExporter("output/jobs.xlsx")
     
     # Linkedin class to scrap jobs
     linkedin_jobs = linkedin_job_extractor.scrape_jobs()
@@ -96,6 +98,7 @@ def main():
     save_jobs_to_json(linkedin_jobs)
     
     # Generate Excel
+    linkedin_excel_exporter = LinkedinExcelExporter("output/jobs.xlsx")
     linkedin_excel_exporter.export_jobs(linkedin_jobs)
     
     

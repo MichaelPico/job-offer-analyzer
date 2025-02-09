@@ -9,7 +9,7 @@ from typing import List, Optional, Dict
 from utils.remote_llm.openai_job_analyser import OpenAIjobAnalyser
 from utils.local_llm.language_detector import LanguageDetector
 from utils.base_scrapper import fetch_page, _get_href, _get_text
-from .shared import LinkedinJobListing, job_type_dict, experience_level_dict, publish_timespan_dict
+from .shared import JobListing, job_type_dict, experience_level_dict, publish_timespan_dict
 
 class LinkedinExtractor:
     """
@@ -51,7 +51,7 @@ class LinkedinExtractor:
         use_ai_analysis: bool = False,
         desired_language: str = "",
         azure_openai_analyzer: Optional[OpenAIjobAnalyser] = None,
-        job_listings: Optional[List[LinkedinJobListing]] = None
+        job_listings: Optional[List[JobListing]] = None
     ) -> None:
         """
         Initialize the LinkedIn job extractor with search parameters.
@@ -160,7 +160,7 @@ class LinkedinExtractor:
         """
         return f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_id}"
 
-    def populate_job_details(self, job: LinkedinJobListing, job_description: str, job_details_soup: BeautifulSoup) -> None:
+    def populate_job_details(self, job: JobListing, job_description: str, job_details_soup: BeautifulSoup) -> None:
         """
         Extract and populate detailed job information from the job posting page.
 
@@ -264,7 +264,7 @@ class LinkedinExtractor:
                     posted_date -= timedelta(days=days)
 
                 # Create new job listing
-                job = LinkedinJobListing(
+                job = JobListing(
                     title=job_title,
                     url=job_url,
                     company=job_company,
@@ -305,7 +305,7 @@ class LinkedinExtractor:
 
         return found_valid_jobs
 
-    def scrape_jobs(self) -> List[LinkedinJobListing]:
+    def scrape_jobs(self) -> List[JobListing]:
         """
         Execute the job scraping process across all specified positions.
 
