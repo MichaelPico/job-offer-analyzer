@@ -6,7 +6,7 @@ from typing import List, Optional
 # Classes #
 ###########
 @dataclass
-class LinkedinJobListing:
+class JobListing:
     """
     Represents a job listing from LinkedIn.
 
