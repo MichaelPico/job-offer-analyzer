@@ -10,7 +10,7 @@ from datetime import datetime
 from utils.shared import JobListing
 
 
-class LinkedinExcelExporter:
+class JobsExcelExporter:
     def __init__(self, excel_path: str):
         """
         Initialize the Excel exporter with the path where the Excel file should be saved

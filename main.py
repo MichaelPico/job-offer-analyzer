@@ -6,7 +6,7 @@ import json
 import pandas as pd
 from utils.shared import JobListing
 from utils.remote_llm.openai_job_analyser import OpenAIjobAnalyser
-from utils.linkedin_excel_exporter import LinkedinExcelExporter
+from jobs_excel_exporter import JobsExcelExporter
 from utils.local_llm.language_detector import LanguageDetector
 # from utils.local_llm.deep_seek_local_job_parser import DeepSeekLocalJobParser 
 from utils.linkedin_scrapper import LinkedinExtractor
@@ -98,7 +98,7 @@ def main():
     save_jobs_to_json(linkedin_jobs)
     
     # Generate Excel
-    linkedin_excel_exporter = LinkedinExcelExporter("output/jobs.xlsx")
+    linkedin_excel_exporter = JobsExcelExporter("output/jobs.xlsx")
     linkedin_excel_exporter.export_jobs(linkedin_jobs)
     
     
