@@ -50,7 +50,7 @@ class LinkedinExtractor:
         less_than_ten_applicants: bool = True,
         use_ai_analysis: bool = False,
         desired_language: str = "",
-        azure_openai_analyzer: Optional[OpenAIjobAnalyser] = None,
+        openai_analyzer: Optional[OpenAIjobAnalyser] = None,
         job_listings: Optional[List[JobListing]] = None
     ) -> None:
         """
@@ -110,7 +110,7 @@ class LinkedinExtractor:
         if self.should_analyze and not self.desired_language:
             raise ValueError("desired_language must be set when use_ai_analysis is enabled")
 
-        self.azure_openai_analyzer = azure_openai_analyzer if azure_openai_analyzer is not None else OpenAIjobAnalyser()
+        self.azure_openai_analyzer = openai_analyzer if openai_analyzer is not None else OpenAIjobAnalyser()
         self.execution_started_datetime = datetime.now()
 
     def build_job_list_url(self, start: int = 0, keywords: Optional[str] = None) -> str:
