@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+import re
 from typing import List, Optional
+
+from bs4 import BeautifulSoup
 
 ###########
 # Classes #
@@ -94,3 +97,30 @@ publish_timespan_dict = {
     "Week": "r604800",
     "Month": "r2592000",
 }
+
+
+
+###########
+# Methods #
+###########
+
+def html_to_text(html : str) -> str:
+    """Clean and normalize HTML text content.
+    This function takes HTML content, extracts the text, and normalizes whitespace.
+    Args:
+        html (str): Raw HTML content to be cleaned.
+    Returns:
+        str: Cleaned text with normalized whitespace.
+    Example:
+        >>> html = '<p>Hello  World!</p>\\n<div>More text</div>'
+        >>> clean_text(html)
+        'Hello World! More text'
+    """
+    # Parse HTML and extract text
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text(separator=" ")
+
+    # Remove extra spaces, new lines, and redundant whitespace
+    text = re.sub(r"\s+", " ", text).strip()
+
+    return text
