@@ -29,24 +29,16 @@ class OpenAIjobAnalyser:
        
         self.model_name = os.getenv('AZURE_OPENAI_MODEL_NAME')
        
-        # Updated system prompt to include salary
-        self.system_prompt = """You are a job cataloger. Extract and return a JSON object
-with the following fields from the given software developer job description:
-- 'experience_years_needed': The number of years of experience required.
-- 'technologies_required': A list of programming languages, frameworks, or tools mentioned as required.
-- 'required_studies': The degree or education level required for the position (e.g., 'Bachelor's in Computer Science').
-- 'salary_offered': The annual salary offered in integers (e.g., 80000). If a range is given, use the lower bound.
-If no explicit experience requirement is found, return 0.
-If no technologies are mentioned, return an empty list.
-If no required studies are mentioned, return 'Not specified'.
-If no salary is mentioned, return 0."""
+        
    
-    def extract_job_data(self, job_description: str) -> JobAIanalysis:
+    def extract_job_data(self, job_description: str, extract_salary: bool = True, extract_techno: bool = True) -> JobAIanalysis:
         """
         Extract relevant information from a job description using Azure OpenAI API
        
         Args:
             job_description (str): The job description text to analyze
+            extract_salary (bool): Whether to extract salary information (default: True)
+            extract_techno (bool): Whether to extract technology requirements (default: True)
            
         Returns:
             JobAIanalysis: A JobAIanalysis object containing the extracted information and token usage
@@ -55,6 +47,35 @@ If no salary is mentioned, return 0."""
             ValueError: If required environment variables are missing
             Various OpenAI exceptions: For API-related errors
         """
+        
+        # Build the system prompt based on parameters
+        base_prompt = """You are a job cataloger. Extract and return a JSON object
+            with the following fields from the given software developer job description:
+            - 'experience_years_needed': The number of years of experience required.
+            - 'required_studies': The degree or education level required for the position (e.g., 'Bachelor's in Computer Science')."""
+            
+        techno_prompt = """
+            - 'technologies_required': A list of programming languages, frameworks, or tools mentioned as required."""
+            
+        salary_prompt = """
+            - 'salary_offered': The annual salary offered in integers (e.g., 80000). If a range is given, use the lower bound."""
+            
+        default_values = """
+            If no explicit experience requirement is found, return 0.
+            If no required studies are mentioned, return 'Not specified'."""
+            
+        if extract_techno:
+            default_values += "\nIf no technologies are mentioned, return an empty list."
+        if extract_salary:
+            default_values += "\nIf no salary is mentioned, return 0."
+            
+        system_prompt = base_prompt
+        if extract_techno:
+            system_prompt += techno_prompt
+        if extract_salary:
+            system_prompt += salary_prompt
+        system_prompt += default_values
+        
         # Verify environment variables
         if not all([os.getenv('AZURE_OPENAI_ENDPOINT'),
                    os.getenv('AZURE_OPENAI_API_KEY'),
@@ -67,7 +88,7 @@ If no salary is mentioned, return 0."""
                 model=self.model_name,
                 response_format={"type": "json_object"},
                 messages=[
-                    {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": job_description}
                 ]
             )
@@ -76,7 +97,13 @@ If no salary is mentioned, return 0."""
             result = eval(response.choices[0].message.content)
             token_cost = response.usage.total_tokens
            
-            # Create and return JobAIanalysis object with salary
+            # Set default values for optional fields
+            if not extract_techno:
+                result['technologies_required'] = []
+            if not extract_salary:
+                result['salary_offered'] = 0
+           
+            # Create and return JobAIanalysis object
             return JobAIanalysis(
                 required_studies=result['required_studies'],
                 technologies_required=result['technologies_required'],
