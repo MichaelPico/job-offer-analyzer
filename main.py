@@ -24,8 +24,6 @@ def save_jobs_to_json(jobs, filename="output/jobs.json"):
         json.dump(job_dicts, f, ensure_ascii=False, indent=4, cls=DateTimeEncoder)
     print("Jobs saved to output/jobs.json")
     
-    
-
 def load_jobs_from_json(filename="output/jobs.json") -> list:
     try:
         with open(filename, "r", encoding="utf-8") as f:
@@ -73,9 +71,12 @@ def load_jobs_from_json(filename="output/jobs.json") -> list:
 def main():
     linkedin_jobs = load_jobs_from_json()
     
+    language_detector =LanguageDetector()
+    openai_analyzer=OpenAIjobAnalyser() if str(os.getenv('USE_AZURE_OPENAI', 'false')).lower() == 'true' else None
+    
     # Language local llm
     linkedin_job_extractor = LinkedinExtractor(
-        language_detector=LanguageDetector(),
+        language_detector=language_detector,
         positions=os.getenv('JOB_SEARCH_POSITIONS', 'Software Developer'),
         location=os.getenv('JOB_SEARCH_LOCATION', 'France'),
         type=os.getenv('JOB_TYPE', 'Remote'),
@@ -87,7 +88,7 @@ def main():
         less_than_ten_applicants=str(os.getenv('LINKEDIN_LESS_THAN_TEN_APPLICANTS', 'true')).lower() == 'true',
         use_ai_analysis=str(os.getenv('USE_AZURE_OPENAI', 'false')).lower() == 'true',
         desired_language=os.getenv('JOB_DESIRED_LANGUAGE', ''),
-        azure_openai_analyzer=OpenAIjobAnalyser() if str(os.getenv('USE_AZURE_OPENAI', 'false')).lower() == 'true' else None,
+        openai_analyzer=openai_analyzer,
         job_listings=linkedin_jobs
     )
     
